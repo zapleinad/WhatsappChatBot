@@ -1,17 +1,29 @@
 # Dependências Node
 node_modules/
+package-lock.json
 
-# Tokens e sessões
+# Tokens e sessões wppconnect
 tokens/
 .wwebjs_auth/
 .wwebjs_cache/
+bot-session/
+*.data.json
+
+# QR Code temporário
+qrcode.txt
+qrcode.png
 
 # Logs
 *.log
+logs/
 
 # Variáveis sensíveis
 .env
+.env.local
 
 # Sistema
 Thumbs.db
 .DS_Store
+
+# Arquivos temporários
+Novo(a) Documento de Texto.txt

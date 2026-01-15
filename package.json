@@ -1,14 +1,18 @@
 {
   "name": "whatsapp-bot",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "bot.js",
   "scripts": {
+    "start": "node bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["whatsapp", "bot", "chatbot", "wppconnect"],
+  "author": "Daniel Lima da Paz",
   "license": "ISC",
-  "description": "",
+  "description": "Bot WhatsApp CISPN/SENASP usando wppconnect",
   "dependencies": {
     "@wppconnect-team/wppconnect": "^1.37.9",
     "qrcode-terminal": "^0.12.0"
