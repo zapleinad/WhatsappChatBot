@@ -6,6 +6,7 @@
 // (1 a 5) e instrui a finalizar a conversa digitando "encerrar".
 
 const wppconnect = require('@wppconnect-team/wppconnect');
+const http = require('http');
 
 // =============================
 // DADOS DO SISTEMA
@@ -403,19 +404,43 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Servidor HTTP para health check do Render
+const PORT = process.env.PORT || 3000;
+let botStatus = 'inicializando';
+let botConnected = false;
+
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({
+    status: 'online',
+    botStatus: botStatus,
+    botConnected: botConnected,
+    timestamp: new Date().toISOString()
+  }));
+});
+
+server.listen(PORT, () => {
+  console.log(`✅ Servidor HTTP rodando na porta ${PORT}`);
+  console.log(`   Health check disponível em http://localhost:${PORT}/`);
+});
+
 // Iniciar bot usando wppconnect
 // Execução protegida: o bot só inicia quando este arquivo é executado diretamente via `node bot.js`.
 function iniciar() {
   console.log('===========================================');
   console.log('    CHATBOT CISPN/SENASP - INICIANDO...');
   console.log('    Autor: Daniel Lima da Paz');
+  console.log('    Ambiente:', process.env.NODE_ENV || 'development');
   console.log(`===========================================
 `);
+
+  botStatus = 'conectando';
 
   wppconnect
     .create({
       session: 'bot-session',
       catchQR: (base64Qrimg, asciiQR, attempts, urlCode) => {
+        botStatus = 'aguardando_qrcode';
         console.log(`
 📱 ESCANEIE O QR CODE ABAIXO COM SEU WHATSAPP:
 `);
@@ -430,7 +455,9 @@ Tentativa:`, attempts);
       statusFind: (statusSession, session) => {
         console.log('Status:', statusSession);
         console.log('Sessão:', session);
+        botStatus = statusSession;
         if (statusSession === 'inChat') {
+          botConnected = true;
           console.log(`
 ✅ BOT CONECTADO E FUNCIONANDO!
 `);
@@ -458,7 +485,13 @@ Tentativa:`, attempts);
     .then((client) => iniciarBot(client))
     .catch((error) => {
       console.error('❌ Erro ao iniciar bot:', error);
-      process.exit(1);
+      botStatus = 'erro';
+      botConnected = false;
+      // Não encerra o processo para manter o servidor HTTP ativo
+      console.log('⚠️ Tentando reconectar em 30 segundos...');
+      setTimeout(() => {
+        iniciar();
+      }, 30000);
     });
 }
 if (require.main === module) {
